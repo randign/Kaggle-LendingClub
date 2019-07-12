@@ -1,0 +1,78 @@
+import warnings
+warnings.simplefilter('ignore')
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.preprocessing import LabelEncoder
+
+pd.options.display.max_rows = 100
+%matplotlib inline
+
+train = pd.read_csv('./data/train.csv')
+test = pd.read_csv('./data/test.csv')
+
+print('Train:')
+print(train.info(verbose=False), '\n')
+print('Test:')
+print(test.info(verbose=False))
+
+# imbalanced dataset
+target1 = train['target'].sum()
+target0 = (1 - train['target']).sum()
+print('Target 1:\t', np.round(target1 / len(train), 4))
+print('Target 0:\t', np.round(target0 / len(train), 4))
+print('Ratio:\t\t', np.round(target0 / target1, 4))
+
+# get missing information
+train_null = train.isnull().sum() / len(train)
+train_null = train_null.reset_index()
+train_null = train_null.rename(columns={'index': 'feature', 0: 'train miss'})
+
+test_null = test.isnull().sum() / len(test)
+test_null = test_null.reset_index()
+test_null = test_null.rename(columns={'index': 'feature', 0: 'test miss'})
+
+# merge train and test null information
+data_null = pd.merge(left=train_null, right=test_null, how='outer')
+data_null = data_null.fillna(value=0)
+
+feature_list = data_null['feature']
+null_rate = []
+not_null_rate = []
+category = []
+train_unique = []
+test_unique = []
+for feature in feature_list:
+    null_rate.append(train[train[feature].isnull()]['target'].mean())
+    not_null_rate.append(train[~train[feature].isnull()]['target'].mean())
+    category.append(train[feature].dtype)
+    train_unique.append(len(train[feature].unique()))
+    test_unique.append(len(test[feature].unique()))
+
+data_null['dtype'] = category    
+data_null['null mean'] = null_rate
+data_null['not null mean'] = not_null_rate
+data_null['train unique'] = train_unique
+data_null['test unique'] = test_unique
+
+data_null = data_null.reset_index(drop=True)
+
+data_null[['feature', 'train miss', 'test miss', 'dtype', 'null mean', 
+           'not null mean', 'train unique', 'test unique']]
+
+# there are some problem with `int_rate` and `revol_util`
+print(train['int_rate'].values[:3], '\t', test['int_rate'].values[:3])
+print(train['revol_util'].values[:3], '\t', train['revol_util'].values[:3])
+
+def str_parser(x):
+    """ function to parse `int_rate` and `revol_util` """
+    if '%' in str(x):
+        return float(str(x).replace('%', ''))
+    return x
+
+train['int_rate'] = train['int_rate'].apply(str_parser)
+train['revol_util'] = train['revol_util'].apply(str_parser)
+test['int_rate'] = test['int_rate'].apply(str_parser)
+test['revol_util'] = test['revol_util'].apply(str_parser)
