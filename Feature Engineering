@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
 
 pd.options.display.max_rows = 100
-%matplotlib inline
+% matplotlib inline
 
 train = pd.read_csv('./data/train.csv')
 test = pd.read_csv('./data/test.csv')
