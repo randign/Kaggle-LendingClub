@@ -25,7 +25,7 @@ print('Target 1:\t', np.round(target1 / len(train), 4))
 print('Target 0:\t', np.round(target0 / len(train), 4))
 print('Ratio:\t\t', np.round(target0 / target1, 4))
 
-# get missing information
+# get all missing information
 train_null = train.isnull().sum() / len(train)
 train_null = train_null.reset_index()
 train_null = train_null.rename(columns={'index': 'feature', 0: 'train miss'})
