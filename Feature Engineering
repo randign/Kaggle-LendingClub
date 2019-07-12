@@ -34,7 +34,7 @@ test_null = test.isnull().sum() / len(test)
 test_null = test_null.reset_index()
 test_null = test_null.rename(columns={'index': 'feature', 0: 'test miss'})
 
-# merge train and test null information
+# merge train and test null informations
 data_null = pd.merge(left=train_null, right=test_null, how='outer')
 data_null = data_null.fillna(value=0)
 
